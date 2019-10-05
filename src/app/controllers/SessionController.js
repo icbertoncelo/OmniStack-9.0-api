@@ -1,6 +1,20 @@
+const { User } = require('../models');
+
 class SessionController {
-  store(req, res) {
-    return res.json({ ok: true });
+  async store(req, res) {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+
+    if (!(await user.compareHash(password))) {
+      return res.status(400).json({ error: 'Password does not match' });
+    }
+
+    return res.json({ user, token: User.generateToken(user) });
   }
 }
 
